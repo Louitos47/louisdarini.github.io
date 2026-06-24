@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Tâches">
+<title>Tâches</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+  :root {
+    --bg: #0f0f13;
+    --surface: #1a1a22;
+    --surface2: #22222e;
+    --border: #2e2e3d;
+    --text: #f0f0f5;
+    --text-muted: #7070a0;
+    --accent: #7c6af7;
+    --accent-glow: rgba(124, 106, 247, 0.18);
+
+    --cat-perso: #4ade80;
+    --cat-rugbyperf: #fb923c;
+    --cat-contenu: #38bdf8;
+    --cat-podcast: #f472b6;
+
+    --prio-high: #ef4444;
+    --prio-normal: #3b3b52;
+
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100dvh;
+    padding-top: calc(var(--safe-top) + 16px);
+    padding-bottom: calc(var(--safe-bottom) + 80px);
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  /* HEADER */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .header h1 {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+  .header .date {
+    font-size: 13px;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  /* QUICK ADD */
+  .quick-add {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 12px 14px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+  .quick-add input {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-size: 15px;
+    font-family: inherit;
+  }
+  .quick-add input::placeholder { color: var(--text-muted); }
+  .quick-add button {
+    background: var(--accent);
+    border: none;
+    border-radius: 8px;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 18px;
+    color: #fff;
+    line-height: 1;
+  }
+
+  /* OPTIONS ROW */
+  .add-options {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .add-options::-webkit-scrollbar { display: none; }
+
+  .cat-chip {
+    padding: 6px 12px;
+    border-radius: 20px;
+    border: 1.5px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+    letter-spacing: 0.2px;
+  }
+  .cat-chip.active { border-color: currentColor; color: var(--chip-color); background: color-mix(in srgb, var(--chip-color) 15%, transparent); }
+  .cat-chip[data-cat="Perso"] { --chip-color: var(--cat-perso); }
+  .cat-chip[data-cat="Rugby Perf"] { --chip-color: var(--cat-rugbyperf); }
+  .cat-chip[data-cat="Contenu"] { --chip-color: var(--cat-contenu); }
+  .cat-chip[data-cat="Podcast"] { --chip-color: var(--cat-podcast); }
+
+  .prio-chip {
+    padding: 6px 12px;
+    border-radius: 20px;
+    border: 1.5px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+  .prio-chip.high { border-color: var(--prio-high); color: var(--prio-high); background: rgba(239,68,68,0.12); }
+
+  /* FILTER BAR */
+  .filter-bar {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .filter-bar::-webkit-scrollbar { display: none; }
+  .filter-btn {
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+  }
+  .filter-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  /* STATS */
+  .stats {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .stat {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 12px;
+    text-align: center;
+  }
+  .stat .num { font-size: 20px; font-weight: 700; color: var(--accent); }
+  .stat .lbl { font-size: 11px; color: var(--text-muted); margin-top: 2px; font-weight: 500; }
+
+  /* TASK LIST */
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    margin-top: 4px;
+  }
+
+  .task-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 8px;
+    transition: opacity 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .task-item::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--cat-color, var(--border));
+    border-radius: 3px 0 0 3px;
+  }
+  .task-item[data-cat="Perso"] { --cat-color: var(--cat-perso); }
+  .task-item[data-cat="Rugby Perf"] { --cat-color: var(--cat-rugbyperf); }
+  .task-item[data-cat="Contenu"] { --cat-color: var(--cat-contenu); }
+  .task-item[data-cat="Podcast"] { --cat-color: var(--cat-podcast); }
+  .task-item.done { opacity: 0.4; }
+  .task-item.high-prio { border-color: rgba(239,68,68,0.3); }
+
+  .task-check {
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+    border: 1.5px solid var(--border);
+    background: transparent;
+    cursor: pointer;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1px;
+    transition: all 0.15s;
+  }
+  .task-check.checked { background: var(--accent); border-color: var(--accent); }
+  .task-check.checked::after { content: '✓'; color: #fff; font-size: 12px; font-weight: 700; }
+
+  .task-body { flex: 1; min-width: 0; }
+  .task-text {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.4;
+    word-break: break-word;
+  }
+  .task-item.done .task-text { text-decoration: line-through; color: var(--text-muted); }
+  .task-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 5px;
+  }
+  .task-cat {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 10px;
+    color: var(--cat-color);
+    background: color-mix(in srgb, var(--cat-color) 15%, transparent);
+    letter-spacing: 0.2px;
+  }
+  .task-prio-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--prio-high);
+    flex-shrink: 0;
+  }
+  .task-time { font-size: 10px; color: var(--text-muted); }
+
+  .task-del {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 16px;
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 6px;
+    flex-shrink: 0;
+    opacity: 0.5;
+    transition: opacity 0.15s;
+    line-height: 1;
+    margin-top: 0px;
+  }
+  .task-del:hover { opacity: 1; color: var(--prio-high); }
+
+  /* EMPTY */
+  .empty {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 14px;
+    padding: 40px 0;
+  }
+  .empty .emoji { font-size: 36px; display: block; margin-bottom: 10px; }
+
+  /* DONE SECTION TOGGLE */
+  .done-toggle {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    padding: 8px 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .done-toggle .arrow { transition: transform 0.2s; }
+  .done-toggle.open .arrow { transform: rotate(90deg); }
+
+  /* CLEAR DONE */
+  .clear-done {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-muted);
+    font-size: 11px;
+    font-family: inherit;
+    cursor: pointer;
+    padding: 5px 10px;
+    margin-left: auto;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Ma journée 🏉</h1>
+  <span class="date" id="dateDisplay"></span>
+</div>
+
+<!-- QUICK ADD -->
+<div class="quick-add">
+  <input type="text" id="taskInput" placeholder="Nouvelle tâche..." autocomplete="off" autocorrect="off">
+  <button onclick="addTask()">+</button>
+</div>
+
+<!-- OPTIONS -->
+<div class="add-options">
+  <button class="cat-chip active" data-cat="Perso" onclick="selectCat(this)">Perso</button>
+  <button class="cat-chip" data-cat="Rugby Perf" onclick="selectCat(this)">Rugby Perf</button>
+  <button class="cat-chip" data-cat="Contenu" onclick="selectCat(this)">Contenu</button>
+  <button class="cat-chip" data-cat="Podcast" onclick="selectCat(this)">Podcast</button>
+  <button class="prio-chip" id="prioBtn" onclick="togglePrio()">🔴 Urgente</button>
+</div>
+
+<!-- FILTER -->
+<div class="filter-bar">
+  <button class="filter-btn active" data-filter="Tout" onclick="setFilter(this)">Tout</button>
+  <button class="filter-btn" data-filter="Perso" onclick="setFilter(this)">Perso</button>
+  <button class="filter-btn" data-filter="Rugby Perf" onclick="setFilter(this)">Rugby Perf</button>
+  <button class="filter-btn" data-filter="Contenu" onclick="setFilter(this)">Contenu</button>
+  <button class="filter-btn" data-filter="Podcast" onclick="setFilter(this)">Podcast</button>
+</div>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat">
+    <div class="num" id="statTotal">0</div>
+    <div class="lbl">À faire</div>
+  </div>
+  <div class="stat">
+    <div class="num" id="statUrgent">0</div>
+    <div class="lbl">Urgentes</div>
+  </div>
+  <div class="stat">
+    <div class="num" id="statDone">0</div>
+    <div class="lbl">Faites</div>
+  </div>
+</div>
+
+<!-- TASK LIST -->
+<div id="taskList"></div>
+
+<script>
+let tasks = JSON.parse(localStorage.getItem('louis_tasks') || '[]');
+let selectedCat = 'Perso';
+let selectedPrio = false;
+let currentFilter = 'Tout';
+let showDone = false;
+
+// Date
+const d = new Date();
+const days = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+const months = ['jan','fév','mar','avr','mai','jun','jul','aoû','sep','oct','nov','déc'];
+document.getElementById('dateDisplay').textContent = `${days[d.getDay()]} ${d.getDate()} ${months[d.getMonth()]}`;
+
+function save() {
+  localStorage.setItem('louis_tasks', JSON.stringify(tasks));
+}
+
+function selectCat(el) {
+  document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  selectedCat = el.dataset.cat;
+}
+
+function togglePrio() {
+  selectedPrio = !selectedPrio;
+  const btn = document.getElementById('prioBtn');
+  btn.classList.toggle('high', selectedPrio);
+  btn.textContent = selectedPrio ? '🔴 Urgente ✓' : '🔴 Urgente';
+}
+
+function setFilter(el) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  currentFilter = el.dataset.filter;
+  render();
+}
+
+function addTask() {
+  const input = document.getElementById('taskInput');
+  const text = input.value.trim();
+  if (!text) return;
+
+  tasks.unshift({
+    id: Date.now(),
+    text,
+    cat: selectedCat,
+    prio: selectedPrio,
+    done: false,
+    ts: Date.now()
+  });
+
+  input.value = '';
+  save();
+  render();
+  input.focus();
+}
+
+function toggleTask(id) {
+  const t = tasks.find(t => t.id === id);
+  if (t) { t.done = !t.done; save(); render(); }
+}
+
+function deleteTask(id) {
+  tasks = tasks.filter(t => t.id !== id);
+  save();
+  render();
+}
+
+function clearDone() {
+  tasks = tasks.filter(t => !t.done);
+  save();
+  render();
+}
+
+function fmt(ts) {
+  const d = new Date(ts);
+  return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+
+function render() {
+  const list = document.getElementById('taskList');
+  list.innerHTML = '';
+
+  let filtered = tasks.filter(t => currentFilter === 'Tout' || t.cat === currentFilter);
+  const todo = filtered.filter(t => !t.done).sort((a,b) => b.prio - a.prio || b.ts - a.ts);
+  const done = filtered.filter(t => t.done);
+
+  // Stats (global, pas filtrées)
+  document.getElementById('statTotal').textContent = tasks.filter(t => !t.done).length;
+  document.getElementById('statUrgent').textContent = tasks.filter(t => !t.done && t.prio).length;
+  document.getElementById('statDone').textContent = tasks.filter(t => t.done).length;
+
+  // À faire
+  if (todo.length === 0 && done.length === 0) {
+    list.innerHTML = '<div class="empty"><span class="emoji">🎯</span>Aucune tâche. Ajoute quelque chose !</div>';
+    return;
+  }
+
+  if (todo.length > 0) {
+    const lbl = document.createElement('div');
+    lbl.className = 'section-label';
+    lbl.textContent = `À faire — ${todo.length}`;
+    list.appendChild(lbl);
+
+    todo.forEach(t => {
+      const el = document.createElement('div');
+      el.className = 'task-item' + (t.prio ? ' high-prio' : '');
+      el.dataset.cat = t.cat;
+      el.innerHTML = `
+        <div class="task-check${t.done?' checked':''}" onclick="toggleTask(${t.id})"></div>
+        <div class="task-body">
+          <div class="task-text">${escHtml(t.text)}</div>
+          <div class="task-meta">
+            <span class="task-cat">${t.cat}</span>
+            ${t.prio ? '<span class="task-prio-dot"></span>' : ''}
+            <span class="task-time">${fmt(t.ts)}</span>
+          </div>
+        </div>
+        <button class="task-del" onclick="deleteTask(${t.id})">×</button>
+      `;
+      list.appendChild(el);
+    });
+  }
+
+  // Faites
+  if (done.length > 0) {
+    const toggleRow = document.createElement('div');
+    toggleRow.style.display = 'flex';
+    toggleRow.style.alignItems = 'center';
+
+    const toggle = document.createElement('button');
+    toggle.className = 'done-toggle' + (showDone ? ' open' : '');
+    toggle.innerHTML = `<span class="arrow">▶</span> Terminées — ${done.length}`;
+    toggle.onclick = () => { showDone = !showDone; render(); };
+
+    const clr = document.createElement('button');
+    clr.className = 'clear-done';
+    clr.textContent = 'Effacer';
+    clr.onclick = clearDone;
+
+    toggleRow.appendChild(toggle);
+    toggleRow.appendChild(clr);
+    list.appendChild(toggleRow);
+
+    if (showDone) {
+      done.forEach(t => {
+        const el = document.createElement('div');
+        el.className = 'task-item done';
+        el.dataset.cat = t.cat;
+        el.innerHTML = `
+          <div class="task-check checked" onclick="toggleTask(${t.id})"></div>
+          <div class="task-body">
+            <div class="task-text">${escHtml(t.text)}</div>
+            <div class="task-meta">
+              <span class="task-cat">${t.cat}</span>
+              <span class="task-time">${fmt(t.ts)}</span>
+            </div>
+          </div>
+          <button class="task-del" onclick="deleteTask(${t.id})">×</button>
+        `;
+        list.appendChild(el);
+      });
+    }
+  }
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// Enter key
+document.getElementById('taskInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') addTask();
+});
+
+render();
+</script>
+</body>
+</html>
