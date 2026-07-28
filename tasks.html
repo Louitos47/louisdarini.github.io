@@ -23,6 +23,7 @@
     --cat-rugbyperf: #fb923c;
     --cat-contenu: #38bdf8;
     --cat-podcast: #f472b6;
+    --cat-boulot: #facc15;
     --prio-high: #ef4444;
     --prio-normal: #3b3b52;
     --safe-top: env(safe-area-inset-top, 0px);
@@ -139,6 +140,7 @@
   .cat-chip[data-cat="Rugby Perf"] { --chip-color: var(--cat-rugbyperf); }
   .cat-chip[data-cat="Contenu"] { --chip-color: var(--cat-contenu); }
   .cat-chip[data-cat="Podcast"] { --chip-color: var(--cat-podcast); }
+  .cat-chip[data-cat="Boulot"] { --chip-color: var(--cat-boulot); }
 
   .prio-chip {
     padding: 6px 12px; border-radius: 20px;
@@ -227,6 +229,7 @@
   .task-item[data-cat="Rugby Perf"] { --cat-color: var(--cat-rugbyperf); }
   .task-item[data-cat="Contenu"] { --cat-color: var(--cat-contenu); }
   .task-item[data-cat="Podcast"] { --cat-color: var(--cat-podcast); }
+  .task-item[data-cat="Boulot"] { --cat-color: var(--cat-boulot); }
   .task-item.done { opacity: 0.4; }
   .task-item.high-prio { border-color: rgba(239,68,68,0.3); }
   .task-item.dragging { opacity: 0.5; transform: scale(0.98); }
@@ -336,6 +339,7 @@
   <button class="cat-chip" data-cat="Rugby Perf" onclick="selectCat(this)">Rugby Perf</button>
   <button class="cat-chip" data-cat="Contenu" onclick="selectCat(this)">Contenu</button>
   <button class="cat-chip" data-cat="Podcast" onclick="selectCat(this)">Podcast</button>
+  <button class="cat-chip" data-cat="Boulot" onclick="selectCat(this)">Boulot</button>
   <button class="prio-chip" id="prioBtn" onclick="togglePrio()">🔴 Urgente</button>
 </div>
 
@@ -346,6 +350,7 @@
   <button class="filter-btn" data-filter="Rugby Perf" onclick="setFilter(this)">Rugby Perf</button>
   <button class="filter-btn" data-filter="Contenu" onclick="setFilter(this)">Contenu</button>
   <button class="filter-btn" data-filter="Podcast" onclick="setFilter(this)">Podcast</button>
+  <button class="filter-btn" data-filter="Boulot" onclick="setFilter(this)">Boulot</button>
 </div>
 
 <!-- STATS -->
